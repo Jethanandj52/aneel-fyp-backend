@@ -2,9 +2,15 @@ require('dotenv').config();
 const express= require('express')
 const {dbConnected} = require('./config/dataBase')
 const {routes} = require('./routes/auth')
-const productRoutes= require('./routes/product')
+ 
+const networkRouter = require('./routes/network')
 const cookieParser= require('cookie-parser')
-const cors= require('cors')
+const valunRouter = require('./routes/valun')// Import the valun router
+const cors= require('cors');
+const portRouter = require('./routes/port');
+const sslRouter = require('./routes/ssl');
+ 
+
 
 const app= express()
 
@@ -18,7 +24,10 @@ app.use(cors({
 
 app.use('/auth',routes)
 
-app.use('/productApi',productRoutes)
+app.use('/network',networkRouter)
+app.use('/vuln', valunRouter); // Use the valun router
+app.use('/port',portRouter)
+app.use('/ssl',sslRouter)
 
 dbConnected()
     .then(() => console.log("Connected to database successfully"))

@@ -80,7 +80,17 @@ routes.post('/login',async(req,res)=>{
 
          user.isActive = true;
             await user.save();
-            res.send("successfully login")
+          const userData = {
+  firstName: user.firstName,
+  lastName: user.lastName,
+  email: user.email,
+  url: user.url,
+  isActive: user.isActive
+};
+
+
+res.send(userData);
+
      } catch (error) {
         res.status(400).send("Error"+error.message)
         
@@ -102,6 +112,9 @@ routes.post('/forget-password',async(req,res)=>{
              }
 
                 const token = jwt.sign({ id: user._id },secretKey, { expiresIn: '10m' });
+                   res.cookie("token",token,{
+       expires:  new Date(Date.now() + 60 * 10000),
+       })
              const resetLink = `${resetPasswordLink}/${token}`; // 🔁 FRONTEND LINK
              
                      // ✅ Send Email via Nodemailer
@@ -113,9 +126,9 @@ routes.post('/forget-password',async(req,res)=>{
                          }
                      });
                      const mailOptions = {
-                         from: 'APIverse <your-email@gmail.com>',
+                         from: 'Automated Vulnerability Scanner <your-email@gmail.com>',
                          to: email,
-                         subject: 'Reset Your Password - APIverse',
+                         subject: 'Reset Your Password - Automated Vulnerability Scanner',
                          html: `<p>Click the link below to reset your password:</p>
                                 <a href="${resetLink}">${resetLink}</a>
                                 <p>This link expires in 10 minutes.</p>`
@@ -133,7 +146,7 @@ routes.post('/forget-password',async(req,res)=>{
 
 
  // path adjust kro if needed
-routes.post("/reset-password/:token", async (req, res) => {
+routes.post("/reset-password/:token",userAuth,async (req, res) => {
   try {
     const { token } = req.params;
     const { newPassword } = req.body;
@@ -158,7 +171,7 @@ routes.post("/reset-password/:token", async (req, res) => {
 });
 
 
-routes.post('/logout', async (req, res) => {
+routes.post('/logout' ,userAuth, async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -180,7 +193,7 @@ routes.get('/users', async (req, res) => {
 });
 
 // DELETE specific user
-routes.delete('/users/:id', async (req, res) => {
+routes.delete('/users/:id',userAuth, async (req, res) => {
   await User.findByIdAndDelete(req.params.id);
   res.json({ msg: 'User deleted' });
 });

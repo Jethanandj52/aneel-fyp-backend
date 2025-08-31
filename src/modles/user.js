@@ -62,7 +62,7 @@ const userSchema = new Schema(
 );
 
 // The collection name can be specified as the third argument to mongoose.model
-const User = mongoose.model('User', userSchema, 'users');
+const User = mongoose.model('User', userSchema,'users');
 module.exports={
     User
 } 
