@@ -49,6 +49,20 @@ routes.post('/signup',async(req,res)=>{
 
    
 })
+routes.get('/users', async (req, res) => {
+  const users = await User.find();
+  res.json({ users });
+});
+routes.get("/user/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) return res.status(404).send({ message: "User not found" });
+    res.send(user);
+  } catch (error) {
+    res.status(400).send("Error: " + error.message);
+  }
+});
+
 
 routes.post('/login',async(req,res)=>{
      try {
@@ -81,11 +95,7 @@ routes.post('/login',async(req,res)=>{
          user.isActive = true;
             await user.save();
           const userData = {
-  firstName: user.firstName,
-  lastName: user.lastName,
-  email: user.email,
-  url: user.url,
-  isActive: user.isActive
+            _id: user._id,
 };
 
 

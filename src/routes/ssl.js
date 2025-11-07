@@ -50,7 +50,6 @@ function normalizeSANs(cert) {
 function fetchCertificate({ host, port, timeoutMs = 8000 }) {
   return new Promise((resolve, reject) => {
     const started = Date.now();
-
     const socket = tls.connect(
       {
         host,
@@ -123,28 +122,24 @@ sslRouter.post("/check", async (req, res) => {
     if (!domain || typeof domain !== "string") {
       return res.status(400).json({ error: "domain is required" });
     }
-    protocol = (protocol || "https").toLowerCase();
 
-    // Special case: http
+    protocol = (protocol || "https").toLowerCase();
     if (protocol === "http") {
       return res.json({
         domain,
         protocol,
         status: "No SSL",
-        message: "This site does not support SSL/TLS on HTTP (port 80).",
+        message: "HTTP does not support SSL/TLS (port 80).",
       });
     }
 
     const port = PROTOCOL_PORTS[protocol];
     if (!port) {
       return res.status(400).json({
-        error: `Unsupported protocol '${protocol}'. Use one of: ${Object.keys(
-          PROTOCOL_PORTS
-        ).join(", ")}`,
+        error: `Unsupported protocol '${protocol}'. Supported: ${Object.keys(PROTOCOL_PORTS).join(", ")}`,
       });
     }
 
-    // Strip scheme if user pasted full URL
     domain = domain.replace(/^https?:\/\//i, "").trim();
 
     const certInfo = await fetchCertificate({ host: domain, port });
@@ -154,6 +149,7 @@ sslRouter.post("/check", async (req, res) => {
       ...certInfo,
     });
   } catch (err) {
+    console.error("❌ SSL CHECK ERROR:", err);
     return res.status(500).json({
       error: err?.message || "Failed to fetch SSL/TLS certificate",
     });
